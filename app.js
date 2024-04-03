@@ -57,3 +57,30 @@ app.get('/weather', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+
+// Assuming you have retrieved the `lat` and `lon` values from the city search response
+const lat = 40.7128; // Example latitude
+const lon = -74.0060; // Example longitude
+
+// Make a new request to the server's /weather endpoint
+fetch(`/weather?lat=${lat}&lon=${lon}`)
+  .then(response => {
+    // Check if the response is successful
+    if (response.ok) {
+      // Parse the JSON response
+      return response.json();
+    } else {
+      // Handle error if the response is not successful
+      throw new Error('Failed to fetch weather data');
+    }
+  })
+  .then(weatherData => {
+    // Handle the weather data received from the server
+    console.log(weatherData);
+    // You can do further processing with the weather data here
+  })
+  .catch(error => {
+    // Handle any errors that occurred during the fetch
+    console.error('Error fetching weather data:', error);
+  });
