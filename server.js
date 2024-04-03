@@ -1,48 +1,96 @@
 const express = require('express');
 const weatherData = require('./data/weather.json');
 
-// Define the Forecast class
-class Forecast {
-  constructor(date, description) {
-    this.date = date;
-    this.description = description;
-  }
-}
+// Dynamic import of node-fetch
+import('node-fetch')
+  .then(module => {
+    const fetch = module.default;
 
-const app = express();
-const port = process.env.PORT || 3000;
+    // Define the Forecast class
+    class Forecast {
+      constructor(date, description) {
+        this.date = date;
+        this.description = description;
+      }
+    }
 
-// Define routes
-app.get('/', (req, res) => {
-  res.send('Hello, world!');
-});
+    const app = express();
+    const port = process.env.PORT || 3000;
 
-app.get('/weather', (req, res) => {
-  const { lat, lon, searchQuery } = req.query;
-
-  if (lat && lon && searchQuery) {
-    const filteredData = weatherData.filter(location => {
-      return (
-        location.lat === lat &&
-        location.lon === lon &&
-        location.city_name.toLowerCase() === searchQuery.toLowerCase()
-      );
+    // Define routes
+    app.get('/', (req, res) => {
+      res.send('Hello, world!');
     });
 
-    if (filteredData.length > 0) {
-      const forecasts = filteredData[0].data.map(item => new Forecast(item.valid_date, item.weather.description));
-      res.json(forecasts);
-    } else {
-      res.status(404).json({ message: 'No weather data found for the specified location and search query.' });
+    app.get('/weather', async (req, res) => {
+      const { lat, lon, searchQuery } = req.query;
+
+      // Check if lat, lon, and searchQuery are provided
+      if (!lat || !lon || !searchQuery) {
+        return res.status(400).json({ message: 'Please provide lat, lon, and searchQuery parameters.' });
+      }
+
+      // Your existing code for filtering weather data
+
+      try {
+        // Make API call using makeApiCall function
+        const apiResponse = await makeApiCall();
+
+        // Handle API response
+        handleApiResponse(apiResponse);
+
+        // Your existing code for sending the response
+      } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ message: 'Internal server error' }); // Sending status 500 and error message
+      }
+    });
+
+    // Start the server
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+
+    // Define the makeApiCall function
+    async function makeApiCall() {
+      try {
+        const response = await fetch("https://api.example.com");
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('HTTP Error: ' + response.status);
+        }
+      } catch (error) {
+        console.error('Error connecting to the API:', error);
+        throw error; // Rethrow the error
+      }
     }
-  } else {
-    res.status(400).json({ message: 'Please provide lat, lon, and searchQuery parameters.' });
-  }
-});
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+    // Define the handleApiResponse function
+    function handleApiResponse(response) {
+      if (response != null) {
+        try {
+          console.log("API Response:", response);
+          // Process the response here
+        } catch (error) {
+          console.error("Error decoding JSON response:", error);
+        }
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error importing node-fetch:', error);
+  });
 
 
+// Change this line
+// const fetch = require('node-fetch');
+
+// To this
+import('node-fetch').then(module => {
+    const fetch = module.default;
+    // Your server code that uses fetch goes here
+  }).catch(error => {
+    console.error('Error importing node-fetch:', error);
+  });
+  
