@@ -1,68 +1,48 @@
-// Import required modules
 const express = require('express');
 const weatherData = require('./data/weather.json');
-const Forecast = require('./Forecast'); // Import the Forecast class
-const fetch = require('node-fetch'); // Import fetch for Node.js
+const cors = require('cors');
 
-// Create an instance of Express app
+class Forecast {
+  constructor(date, description) {
+    this.date = date;
+    this.description = description;
+  }
+}
+
 const app = express();
-
-// Define the port
 const port = process.env.PORT || 3000;
+app.use(cors());
 
-// Define routes
-app.get('/weather', async (req, res) => {
+app.get('/', (req, res) => {
+  res.send('Hello, world!');
+});
+
+app.get('/weather', (req, res) => {
   const { lat, lon, searchQuery } = req.query;
 
-  // Check if lat, lon, and searchQuery are provided
+  // Validate lat, lon, and searchQuery
   if (!lat || !lon || !searchQuery) {
     return res.status(400).json({ message: 'Please provide lat, lon, and searchQuery parameters.' });
   }
 
-  // Your existing code for filtering weather data
+  // Find weather data based on lat, lon, and searchQuery
+  const filteredData = weatherData.filter(location => {
+    return (
+      location.lat === lat &&
+      location.lon === lon &&
+      location.city_name.toLowerCase() === searchQuery.toLowerCase()
+    );
+  });
 
-  try {
-    // Make API call using makeApiCall function
-    const apiResponse = await makeApiCall();
-
-    // Handle API response
-    handleApiResponse(apiResponse);
-
-    // Your existing code for sending the response
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+  if (filteredData.length === 0) {
+    return res.status(404).json({ message: 'No weather data found for the specified location and search query.' });
   }
+
+  // Extract forecasts from filtered data
+  const forecasts = filteredData[0].data.map(item => new Forecast(item.valid_date, item.weather.description));
+  res.json(forecasts);
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-// Define the makeApiCall function
-async function makeApiCall() {
-  try {
-    const response = await fetch("https://api.example.com");
-    if (response.ok) {
-      return response.json();
-    } else {
-      throw new Error('HTTP Error: ' + response.status);
-    }
-  } catch (error) {
-    console.error('Error connecting to the API:', error);
-    throw error; // Rethrow the error
-  }
-}
-
-// Define the handleApiResponse function
-function handleApiResponse(response) {
-  if (response != null) {
-    try {
-      console.log("API Response:", response);
-      // Process the response here
-    } catch (error) {
-      console.error("Error decoding JSON response:", error);
-    }
-  }
-}
