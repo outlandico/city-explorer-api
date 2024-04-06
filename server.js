@@ -5,8 +5,8 @@ const cors = require('cors');
 const Movie = require('./Movie'); // Import the Movie class
 
 const app = express();
-const port = process.env.PORT || 3000;
-const renderUrl = process.env.RENDER_URL;
+const port = process.env.PORT 
+
 
 // Use CORS middleware
 app.use(cors());
