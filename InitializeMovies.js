@@ -6,7 +6,7 @@ const cors = require('cors');
 const weatherData = require('./data/weather.json');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3007;
 const mapApiKey = process.env.VITE_MAP_KEY; // Accessing mapApiKey from environment variables
 const WEATHER_KEY = process.env.WEATHER_KEY
 // Define routes...
