@@ -1,17 +1,18 @@
 require('dotenv').config();
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
+const axios = require('axios');
 const Movie = require('./Movie'); // Import the Movie class
+const { fetchWeatherData } = require('./weather'); // Import the fetchWeatherData function
+const { fetchMovieData } = require('./movies'); // Import the fetchMovieData function
 
 const app = express();
 const port = process.env.PORT || 3007;
 
-
 // Use CORS middleware
 app.use(cors());
 
-// Define the Forecast class
+// Define the Forecast class (remains unchanged)
 class Forecast {
   constructor(weatherData) {
     this.date = weatherData.datetime;
@@ -19,12 +20,12 @@ class Forecast {
   }
 }
 
-// Define routes
+// Define routes (remains unchanged)
 app.get('/', (req, res) => {
   res.send('Hello, world!');
 });
 
-// Endpoint to fetch weather data
+// Endpoint to fetch weather data (remains unchanged)
 app.get('/weather', async (req, res) => {
   const { city } = req.query;
   if (!city) {
@@ -32,7 +33,7 @@ app.get('/weather', async (req, res) => {
   }
 
   try {
-    const weatherData = await fetchWeatherData(city);
+    const weatherData = await fetchWeatherData(city, process.env.WEATHER_KEY);
     const forecasts = weatherData.map(day => new Forecast(day));
     res.status(200).json(forecasts);
   } catch (error) {
@@ -41,44 +42,18 @@ app.get('/weather', async (req, res) => {
   }
 });
 
-// Endpoint to fetch movie data
+// Endpoint to fetch movie data (using fetchMovieData function from movies.js)
 app.get('/movies', async (req, res) => {
   try {
-    // Ensure MOVIE_API_KEY is provided
+    // Ensure MOVIE_API_KEY is provided (remains unchanged)
     if (!process.env.MOVIE_API_KEY) {
       return res.status(500).json({ message: 'Movie API key not provided.' });
     }
 
-    // Extract necessary location information from request query
-    // const { lat, lon, searchQuery } = req.query;
-    // if (!lat || !lon || !searchQuery) {
-    //   return res.status(400).json({ message: 'Please provide lat, lon, and searchQuery parameters.' });
-    // }
     const { searchQuery } = req.query;
-    // if (!searchQuery) {
-    //   return res.status(400).json({ message: 'Please provide lat, lon, and searchQuery parameters.' });
-    // }
 
-    // Make Axios request to The Movie Database API
-    const response = await axios.get(`https://api.themoviedb.org/3/discover/movie`, {
-      params: {
-        api_key: process.env.MOVIE_API_KEY,
-        // lat,
-        // lon,
-        query: searchQuery
-      }
-    });
-
-    // Extract movie data from the response
-    const movies = response.data.results.map(movie => new Movie(
-      movie.title,
-      movie.overview,
-      movie.vote_average,
-      movie.vote_count,
-      `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-      movie.popularity,
-      movie.release_date
-    ));
+    // Fetch movie data using the exported function from movies.js
+    const movies = await fetchMovieData(process.env.MOVIE_API_KEY, searchQuery);
 
     // Send movie data as response
     res.status(200).json(movies);
@@ -88,19 +63,7 @@ app.get('/movies', async (req, res) => {
   }
 });
 
-// Define the function to fetch weather data
-async function fetchWeatherData(city) {
-  try {
-    const response = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WEATHER_KEY}&city=${city}&days=5`);
-    return response.data.data;
-  } catch (error) {
-    console.error('Error connecting to the weather API:', error);
-    throw error;
-  }
-}
-
-
-// Start the server
+// Start the server (remains unchanged)
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
