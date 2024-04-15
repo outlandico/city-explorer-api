@@ -6,6 +6,7 @@ const Movie = require('./Movie'); // Import the Movie class
 const { fetchWeatherData } = require('./weather'); // Import the fetchWeatherData function
 const { fetchMovieData } = require('./movies'); // Import the fetchMovieData function
 
+
 const app = express();
 const port = process.env.PORT || 3007;
 

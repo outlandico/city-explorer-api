@@ -1,9 +1,13 @@
 // server.js
+
+
+
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const weatherData = require('./data/weather.json');
+
 
 const app = express();
 const port = process.env.PORT || 3007;
